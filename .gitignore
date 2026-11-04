@@ -12,6 +12,9 @@
 .swiftpm/
 migrate_working_dir/
 
+# Environment variables (credentials)
+.env
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -46,3 +49,28 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Supabase specific
+supabase/.temp/
+supabase/functions/.nuxt/
+supabase/functions/dist/
+supabase/functions/node_modules/
+
+# Backup files
+*.backup
+*.bak
+*_backup.*
+
+# Local configuration (machine-specific)
+.env.local
+*.local
+
+# OS generated files
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# Project-specific notes (personal)
+Studylapse_nextup.txt
+NOTES.md
+TODO.md
