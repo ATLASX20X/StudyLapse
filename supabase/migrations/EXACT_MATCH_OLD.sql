@@ -128,10 +128,11 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.users (auth_id, username, email)
+  INSERT INTO public.users (auth_id, username, name, email)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'username', 'user_' || substring(NEW.id::text, 1, 8)),
+    COALESCE(NEW.raw_user_meta_data->>'name', 'Étudiant'),
     NEW.email
   );
   RETURN NEW;
