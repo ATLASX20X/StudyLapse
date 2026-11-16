@@ -66,7 +66,7 @@ class PostService {
         // Do NOT include own posts - ONLY friends' posts
         // Fetch all posts and filter in memory (Supabase doesn't support IN filter with list)
         response = await _supabase.posts
-            .select('id,author_id,author_username,video_url,thumbnail_url,description,subject,duration_seconds,visibility,created_at,likes_count,comments_count')
+            .select('id,author_id,author_username,video_url,thumbnail_url,description,subject,duration_seconds,visibility,created_at,updated_at,likes_count,comments_count')
             .order('created_at', ascending: false)
             .range(offset, offset + limit * 2); // Fetch more to account for filtering
 
@@ -91,10 +91,12 @@ class PostService {
       } else {
         // For community feed: show public posts + friends' posts with friends visibility
         response = await _supabase.posts
-            .select('id,author_id,author_username,video_url,thumbnail_url,description,subject,duration_seconds,visibility,created_at,likes_count,comments_count')
+            .select('id,author_id,author_username,video_url,thumbnail_url,description,subject,duration_seconds,visibility,created_at,updated_at,likes_count,comments_count')
             .or('visibility.eq.public,visibility.eq.friends')
             .order('created_at', ascending: false)
             .range(offset, offset + limit - 1);
+
+        debugPrint('Community feed raw response: ${response.length} posts');
 
         // Filter: show public posts OR friends' posts with friends visibility
         final friendIdSet = friendIds?.toSet() ?? <String>{};
@@ -130,6 +132,7 @@ class PostService {
 
       return posts;
     } catch (e) {
+      debugPrint('Get feed error: $e');
       throw Exception('Get feed error: $e');
     }
   }

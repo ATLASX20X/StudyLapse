@@ -179,6 +179,11 @@ class _PostCardState extends State<PostCard> {
       }
     } catch (e) {
       debugPrint('Error toggling like: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur like: $e'), backgroundColor: Colors.red),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -201,8 +206,9 @@ class _PostCardState extends State<PostCard> {
         limit: _commentsPageSize,
         offset: loadMore ? _commentsPage * _commentsPageSize : 0,
       );
+      debugPrint('Loaded ${commentsData.length} comments for post ${widget.post.id}');
       final comments = commentsData.map((json) => Comment.fromJson(json)).toList();
-      
+
       if (mounted) {
         setState(() {
           if (loadMore) {
@@ -251,6 +257,11 @@ class _PostCardState extends State<PostCard> {
       }
     } catch (e) {
       debugPrint('Error adding comment: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur commentaire: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 

@@ -17,22 +17,23 @@ class SupabaseService {
     String supabaseUrl;
     String supabaseAnonKey;
 
-    if (kIsWeb) {
-      // Web: Use hardcoded values for Netlify deployment
-      // In production, these should be set in Netlify environment variables
-      supabaseUrl = const String.fromEnvironment(
-        'SUPABASE_URL',
-        defaultValue: 'https://haxmvucxlekfxiqvvevs.supabase.co',
-      );
-      supabaseAnonKey = const String.fromEnvironment(
-        'SUPABASE_ANON_KEY',
-        defaultValue: 'sb_publishable_-QkaHy32MnLjZ6E0foxjOA_9vbX1GnS',
-      );
-    } else {
-      // Mobile: Load from .env file
+    // Load from .env file (works on all platforms)
+    try {
       await dotenv.load(fileName: '.env');
-      supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
-      supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+    } catch (_) {
+      // .env absent (ex: build Netlify sans fichier) — on utilisera
+      // les variables --dart-define ci-dessous.
+    }
+    supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
+    supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+
+    if (kIsWeb) {
+      // Web (ex: Netlify) : surcharge possible via --dart-define ou
+      // variables d'environnement injectées au build.
+      const envUrl = String.fromEnvironment('SUPABASE_URL');
+      const envKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+      if (envUrl.isNotEmpty) supabaseUrl = envUrl;
+      if (envKey.isNotEmpty) supabaseAnonKey = envKey;
     }
 
     if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {

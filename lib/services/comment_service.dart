@@ -72,7 +72,7 @@ class CommentService {
   }) async {
     try {
       final response = await _supabase.comments
-          .select('id,post_id,author_id,author_username,text,created_at')
+          .select('id,post_id,author_id,author_username,text,created_at,updated_at')
           .eq('post_id', postId)
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);

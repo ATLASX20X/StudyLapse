@@ -260,9 +260,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       final friendIds = friends.map((f) => f['id'] as String).toSet();
       final isFriend = friendIds.contains(_user!.id);
 
+      // Check if there's a pending request from current user to this user
+      bool hasPending = false;
+      if (!isFriend) {
+        final pendingRequests = await _friendService.getPendingRequests();
+        hasPending = pendingRequests.any((req) => req.toUserId == _user!.id);
+      }
+
       if (mounted) {
         setState(() {
           _isFriend = isFriend;
+          _hasPendingRequest = hasPending;
         });
       }
     } catch (e) {

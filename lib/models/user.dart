@@ -3,7 +3,7 @@ class AppUser {
   final String? authId;
   final String username; // Identifier (unique, used for search)
   final String? name; // Display name
-  final String email;
+  final String? email;
   final String? avatarUrl;
   final String? bio;
   final int friendsCount;
@@ -35,7 +35,7 @@ class AppUser {
       authId: json['auth_id'] as String?,
       username: json['username'] as String,
       name: json['name'] as String?,
-      email: json['email'] as String,
+      email: json['email'] as String?,
       avatarUrl: json['avatar_url'] as String?,
       bio: json['bio'] as String?,
       friendsCount: (json['friends_count'] as num?)?.toInt() ?? 0,

@@ -9,7 +9,7 @@ class UserService {
   Future<models.AppUser?> getUser(String userId) async {
     try {
       final response = await _supabase.users
-          .select('id,auth_id,email,username,name,bio,friends_count,posts_count,storage_used_bytes,avatar_url')
+          .select('id,auth_id,email,username,name,bio,friends_count,posts_count,storage_used_bytes,storage_limit_bytes,avatar_url,created_at,updated_at')
           .eq('id', userId)
           .single();
       return models.AppUser.fromJson(response);
@@ -21,12 +21,15 @@ class UserService {
   // Get user by auth ID
   Future<models.AppUser?> getUserByAuthId(String authId) async {
     try {
+      debugPrint('getUserByAuthId: searching for auth_id=$authId');
       final response = await _supabase.users
-          .select('id,auth_id,email,username,name,bio,friends_count,posts_count,storage_used_bytes,avatar_url')
+          .select('id,auth_id,email,username,name,bio,friends_count,posts_count,storage_used_bytes,storage_limit_bytes,avatar_url,created_at,updated_at')
           .eq('auth_id', authId)
           .single();
+      debugPrint('getUserByAuthId: found user ${response['username']}');
       return models.AppUser.fromJson(response);
     } catch (e) {
+      debugPrint('getUserByAuthId error: $e');
       return null;
     }
   }
@@ -44,14 +47,34 @@ class UserService {
     }
   }
 
-  // Search users by username or name
+  // Search users by username or name (username prioritized)
   Future<List<models.AppUser>> searchUsers(String query) async {
     try {
-      final response = await _supabase.users
-          .select('id,username,name,bio,friends_count,posts_count,avatar_url')
-          .or('username.ilike.%$query%,name.ilike.%$query%')
-          .limit(20);
-      return response.map((json) => models.AppUser.fromJson(json)).toList();
+      // First get username matches (prioritized)
+      final usernameMatches = await _supabase.users
+          .select('id,auth_id,email,username,name,bio,friends_count,posts_count,storage_used_bytes,storage_limit_bytes,avatar_url,created_at,updated_at')
+          .ilike('username', '%$query%')
+          .limit(10);
+
+      // Then get name matches
+      final nameMatches = await _supabase.users
+          .select('id,auth_id,email,username,name,bio,friends_count,posts_count,storage_used_bytes,storage_limit_bytes,avatar_url,created_at,updated_at')
+          .ilike('name', '%$query%')
+          .limit(10);
+
+      // Combine and deduplicate (username matches first)
+      final seenIds = <String>{};
+      final results = <models.AppUser>[];
+
+      for (final json in [...usernameMatches, ...nameMatches]) {
+        final id = json['id'] as String;
+        if (!seenIds.contains(id)) {
+          seenIds.add(id);
+          results.add(models.AppUser.fromJson(json));
+        }
+      }
+
+      return results;
     } catch (e) {
       debugPrint('Error searching users: $e');
       return [];

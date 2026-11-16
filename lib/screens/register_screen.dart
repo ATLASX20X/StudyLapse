@@ -86,11 +86,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Compte créé avec succès ! Connectez-vous maintenant.'),
+            content: Text('Compte créé avec succès !'),
             backgroundColor: secondaryColor,
           ),
         );
-        Navigator.of(context).pop(); // Return to login screen
+        // Navigate to home screen instead of back to login
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
       if (mounted) {

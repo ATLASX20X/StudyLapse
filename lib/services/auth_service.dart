@@ -38,6 +38,10 @@ class AuthService {
       final response = await _supabase.auth.signUp(
         email: email,
         password: password,
+        data: {
+          'username': identifier,
+          'name': name,
+        },
       );
 
       if (response.user == null) {
@@ -57,8 +61,17 @@ class AuthService {
         'storage_used_bytes': 0,
       };
 
-      await _supabase.users.upsert(userData);
-      debugPrint('Profile upserted: name=$name, username=$identifier, email=$email');
+      try {
+        await _supabase.users.upsert(userData);
+        debugPrint('Profile upserted: name=$name, username=$identifier, email=$email');
+      } catch (e) {
+        // Ignore duplicate key error - trigger already created the profile
+        if (e.toString().contains('duplicate key') || e.toString().contains('23505')) {
+          debugPrint('Profile already created by trigger, skipping upsert');
+        } else {
+          rethrow;
+        }
+      }
     } catch (e) {
       throw Exception('Registration error: $e');
     }
